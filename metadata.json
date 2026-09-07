@@ -1,0 +1,6 @@
+{
+  "name": "Dialfix - Mobile & Laptop Repairs Manchester",
+  "description": "Premier mobile phone, tablet, and laptop repair specialists in Eccles, Manchester. Same-day screen replacement, battery swap, micro-soldering, and certified pre-owned devices with 12-month warranty.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
