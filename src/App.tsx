@@ -15,6 +15,7 @@ import { BrandLogos } from './components/BrandLogos';
 import { Footer } from './components/Footer';
 import { BookingModal } from './components/BookingModal';
 import { CartDrawer } from './components/CartDrawer';
+import { DialFixChatBot } from './components/DialFixChatBot';
 import { DeviceType, RepairService, ProductItem, CartItem } from './types';
 import { PRODUCTS_CATALOG } from './data/mockData';
 import { CheckCircle2 } from 'lucide-react';
@@ -273,6 +274,9 @@ export default function App() {
         onRemoveItem={handleRemoveItem}
         onClearCart={handleClearCart}
       />
+
+      {/* Official DialFix Chat Bot Assistant */}
+      <DialFixChatBot onOpenBooking={handleOpenBooking} />
     </div>
   );
 }

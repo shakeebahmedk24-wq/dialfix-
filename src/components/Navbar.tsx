@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Phone, Calendar, ShoppingBag, Menu, X, MapPin, Clock, MessageSquare, ChevronRight, ShieldCheck } from 'lucide-react';
+import { Phone, Calendar, ShoppingBag, Menu, X, MapPin, Clock, MessageSquare, ChevronRight, ShieldCheck, Sparkles } from 'lucide-react';
 import { BUSINESS_INFO } from '../data/mockData';
 import { TopBar } from './TopBar';
 
@@ -115,6 +115,17 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenBoo
 
           {/* Desktop CTA & Actions */}
           <div className="hidden sm:flex items-center gap-3">
+            {/* DialFix Chat Bot Quick Launcher */}
+            <button
+              id="header-chatbot-btn"
+              onClick={() => window.dispatchEvent(new CustomEvent('open-dialfix-chatbot'))}
+              className="flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-blue-300 hover:text-white bg-slate-900/90 hover:bg-slate-800 border border-blue-500/40 hover:border-blue-400 rounded-full transition-all shadow-sm"
+              title="Chat with DialFix Chat Bot"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-400 animate-pulse" />
+              <span className="hidden xl:inline">Chat Bot</span>
+            </button>
+
             {/* Cart Icon */}
             <button
               id="header-cart-button"
@@ -240,6 +251,7 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenBoo
                 Quick Actions
               </p>
               
+              {/* Book a Repair Appointment */}
               <button
                 onClick={() => {
                   setMobileMenuOpen(false);
@@ -249,6 +261,18 @@ export const Navbar: React.FC<NavbarProps> = ({ cartCount, onOpenCart, onOpenBoo
               >
                 <Calendar className="w-4 h-4" />
                 <span>Book a Repair Appointment</span>
+              </button>
+
+              {/* DialFix Chat Bot button in mobile drawer */}
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  window.dispatchEvent(new CustomEvent('open-dialfix-chatbot'));
+                }}
+                className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-sm font-semibold text-white bg-slate-900 hover:bg-slate-800 border border-blue-500/40 transition-colors"
+              >
+                <Sparkles className="w-4 h-4 text-blue-400" />
+                <span>DialFix Chat Bot (Instant Answers)</span>
               </button>
 
               <a
