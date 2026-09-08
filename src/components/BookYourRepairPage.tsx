@@ -93,79 +93,6 @@ export const BookYourRepairPage: React.FC<BookYourRepairPageProps> = ({
     'Motherboard Fix',
   ];
 
-  const popularModelsByDevice: Record<string, string[]> = {
-    iPhone: [
-      'iPhone 16 Pro Max',
-      'iPhone 16 Pro',
-      'iPhone 16 Plus / 16',
-      'iPhone 15 Pro Max',
-      'iPhone 15 Pro',
-      'iPhone 15 Plus / 15',
-      'iPhone 14 Pro Max / 14 Pro',
-      'iPhone 14 Plus / 14',
-      'iPhone 13 Pro Max / 13 Pro',
-      'iPhone 13 / 13 Mini',
-      'iPhone 12 / 12 Pro / 12 Mini',
-      'iPhone 11 / 11 Pro Max',
-      'iPhone XR / XS Max / X',
-      'iPhone SE (2020 / 2022)',
-      'Older iPhone Model',
-    ],
-    Samsung: [
-      'Galaxy S24 Ultra',
-      'Galaxy S24+ / S24',
-      'Galaxy S23 Ultra',
-      'Galaxy S23+ / S23',
-      'Galaxy S22 Ultra / S22',
-      'Galaxy S21 / S20 Series',
-      'Galaxy Z Fold 6 / 5 / 4',
-      'Galaxy Z Flip 6 / 5 / 4',
-      'Galaxy A55 / A54 / A53 / A34',
-      'Galaxy A14 / A13 / A04',
-      'Galaxy Note 20 / Note 10',
-      'Other Samsung Galaxy Model',
-    ],
-    Android: [
-      'Google Pixel 9 / 9 Pro / 9 Pro XL',
-      'Google Pixel 8 / 8 Pro / 8a',
-      'Google Pixel 7 / 7 Pro / 6a',
-      'Xiaomi / Redmi / POCO',
-      'OnePlus 12 / 11 / 10 / Nord',
-      'Motorola Edge / Moto G Series',
-      'Sony Xperia',
-      'Huawei / Honor',
-      'Oppo / Realme',
-      'Other Android Device',
-    ],
-    Laptop: [
-      'Apple MacBook Pro (M-Series / Intel)',
-      'Apple MacBook Air (M1 / M2 / M3)',
-      'Dell XPS / Inspiron / Latitude',
-      'Lenovo ThinkPad / IdeaPad / Yoga',
-      'HP Spectre / Envy / Pavilion',
-      'ASUS ZenBook / ROG Gaming',
-      'Acer Aspire / Predator / Swift',
-      'Microsoft Surface Laptop / Pro',
-      'Other Windows PC / Gaming Laptop',
-    ],
-    iPad: [
-      'iPad Pro 13" / 11" (M4 / M2 / M1)',
-      'iPad Air (M2 / 5th / 4th Gen)',
-      'iPad 10th Gen (10.9")',
-      'iPad 9th / 8th Gen (10.2")',
-      'iPad Mini (6th / 5th Gen)',
-      'Samsung Galaxy Tab S9 / S8 / A9',
-      'Other Tablet',
-    ],
-    Other: [
-      'Apple Watch / Smartwatch',
-      'Nintendo Switch / OLED',
-      'PlayStation 5 / Xbox Series X',
-      'Logic Board Component Repair',
-      'Other Tech Gadget',
-    ],
-  };
-
   const toggleIssue = (issue: string) => {
     if (selectedIssues.includes(issue)) {
       if (selectedIssues.length === 1) return; // Keep at least one
@@ -375,32 +302,12 @@ export const BookYourRepairPage: React.FC<BookYourRepairPageProps> = ({
                     Device Type
                   </label>
                   <span className="text-[11px] text-slate-500 font-medium">
-                    Currently: <strong className="text-blue-600">{selectedDeviceType}</strong>
+                    Selected: <strong className="text-blue-600">{selectedDeviceType}</strong>
                   </span>
                 </div>
 
-                {/* Dropdown for Mobile View (Clean touch select on phones) */}
-                <div className="block sm:hidden mb-2">
-                  <div className="relative">
-                    <select
-                      value={selectedDeviceType}
-                      onChange={(e) => setSelectedDeviceType(e.target.value)}
-                      className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-bold text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-10 cursor-pointer shadow-sm"
-                    >
-                      {deviceTypes.map((item) => (
-                        <option key={item.id} value={item.id}>
-                          {item.label} Device
-                        </option>
-                      ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-500">
-                      <ChevronDown className="w-4 h-4" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Grid for Tablets & Desktops */}
-                <div className="hidden sm:grid sm:grid-cols-6 gap-2">
+                {/* Direct Responsive Grid for Mobile & Desktop */}
+                <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
                   {deviceTypes.map((item) => {
                     const isSelected = selectedDeviceType === item.id;
                     const IconComponent = item.icon;
@@ -409,14 +316,14 @@ export const BookYourRepairPage: React.FC<BookYourRepairPageProps> = ({
                         type="button"
                         key={item.id}
                         onClick={() => setSelectedDeviceType(item.id)}
-                        className={`flex flex-col items-center justify-center p-3 rounded-xl border text-xs font-semibold transition-all ${
+                        className={`flex flex-col items-center justify-center p-2.5 sm:p-3 rounded-xl border text-xs font-semibold transition-all ${
                           isSelected
                             ? 'border-blue-600 bg-blue-50 text-blue-700 shadow-sm ring-1 ring-blue-600'
                             : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-slate-300 hover:bg-slate-100'
                         }`}
                       >
-                        <IconComponent className={`w-5 h-5 mb-1.5 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`} />
-                        <span>{item.label}</span>
+                        <IconComponent className={`w-4 h-4 sm:w-5 sm:h-5 mb-1 ${isSelected ? 'text-blue-600' : 'text-slate-500'}`} />
+                        <span className="truncate max-w-full text-[11px] sm:text-xs">{item.label}</span>
                       </button>
                     );
                   })}
@@ -453,55 +360,7 @@ export const BookYourRepairPage: React.FC<BookYourRepairPageProps> = ({
                 </div>
               </div>
 
-              {/* 5. Device Model with Dropdown & Custom Input */}
-              <div className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="block text-xs sm:text-sm font-bold text-slate-800">
-                    Specific Model & Series
-                  </label>
-                  <span className="text-[11px] text-slate-400 font-normal">Optional</span>
-                </div>
-
-                {/* Dropdown for Device Model (Under mobile devices / selected device) */}
-                <div className="relative">
-                  <select
-                    value={
-                      (popularModelsByDevice[selectedDeviceType] || []).includes(deviceModel)
-                        ? deviceModel
-                        : ''
-                    }
-                    onChange={(e) => {
-                      if (e.target.value) {
-                        setDeviceModel(e.target.value);
-                      }
-                    }}
-                    className="w-full px-4 py-3 rounded-xl bg-slate-50 border border-slate-300 text-slate-900 font-medium text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-10 cursor-pointer shadow-sm"
-                  >
-                    <option value="">
-                      -- Select {selectedDeviceType} model from dropdown --
-                    </option>
-                    {(popularModelsByDevice[selectedDeviceType] || []).map((mod) => (
-                      <option key={mod} value={mod}>
-                        {mod}
-                      </option>
-                    ))}
-                  </select>
-                  <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-500">
-                    <ChevronDown className="w-4 h-4" />
-                  </div>
-                </div>
-
-                {/* Freeform input for custom or additional model info */}
-                <input
-                  type="text"
-                  value={deviceModel}
-                  onChange={(e) => setDeviceModel(e.target.value)}
-                  placeholder="Or type exact model name (e.g. iPhone 15 Pro Max 256GB)"
-                  className="w-full px-4 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white text-xs sm:text-sm transition-all"
-                />
-              </div>
-
-              {/* 6. Preferred Time Slot */}
+              {/* 5. Preferred Time Slot */}
               <div>
                 <label className="block text-xs sm:text-sm font-bold text-slate-800 mb-1.5">
                   Preferred Time Slot <span className="text-slate-400 font-normal">(optional)</span>

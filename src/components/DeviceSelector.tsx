@@ -59,33 +59,6 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
           </p>
         </div>
 
-        {/* Mobile Device Category Dropdown (for quick selection on phones) */}
-        <div className="block sm:hidden mb-4">
-          <label className="block text-xs font-semibold text-slate-300 mb-1.5 flex items-center justify-between">
-            <span className="flex items-center gap-1.5">
-              <Smartphone className="w-3.5 h-3.5 text-blue-400" />
-              <span>Select Device Type:</span>
-            </span>
-            <span className="text-[11px] text-blue-400 font-normal">Tap to choose</span>
-          </label>
-          <div className="relative">
-            <select
-              value={selectedDevice}
-              onChange={(e) => onSelectDevice(e.target.value as DeviceType)}
-              className="w-full px-4 py-3 rounded-xl bg-slate-900 border border-slate-700 text-white font-bold text-sm focus:outline-none focus:border-blue-500 appearance-none pr-10 cursor-pointer shadow-md"
-            >
-              {DEVICE_CATEGORIES.map((cat) => (
-                <option key={cat.type} value={cat.type}>
-                  {cat.label} (Book Repair)
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-slate-400">
-              <ChevronDown className="w-4 h-4" />
-            </div>
-          </div>
-        </div>
-
         {/* Device Category Pills / Buttons Grid (Responsive for all screen sizes) */}
         <div className="grid grid-cols-2 xs:grid-cols-3 sm:grid-cols-6 gap-2 sm:gap-4 mb-10 sm:mb-14">
           {DEVICE_CATEGORIES.map((cat) => {
@@ -126,47 +99,9 @@ export const DeviceSelector: React.FC<DeviceSelectorProps> = ({
             </p>
           </div>
           <span className="text-xs text-blue-400 font-semibold mt-2 sm:mt-0 flex items-center gap-1">
-            <span>Tap any repair or select from dropdown</span>
+            <span>Tap any repair to book instantly</span>
             <ArrowRight className="w-3.5 h-3.5" />
           </span>
-        </div>
-
-        {/* Dropdown Menu for This Section (Popular Repairs Dropdown) */}
-        <div className="mb-6 p-3.5 sm:p-4 rounded-2xl bg-gradient-to-r from-slate-900/95 via-slate-900/90 to-blue-950/50 border border-blue-500/40 shadow-xl shadow-blue-950/30">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 mb-2">
-            <label className="text-xs sm:text-sm font-bold text-white flex items-center gap-2">
-              <Wrench className="w-4 h-4 text-blue-400 shrink-0" />
-              <span>Dropdown Menu: Choose a Repair Service</span>
-            </label>
-            <span className="text-[11px] text-blue-300 font-medium">
-              Directly opens Book Your Repair page
-            </span>
-          </div>
-
-          <div className="relative">
-            <select
-              onChange={(e) => {
-                const found = POPULAR_REPAIRS.find((r) => r.id === e.target.value);
-                if (found) {
-                  onSelectRepair(found);
-                }
-              }}
-              defaultValue=""
-              className="w-full px-4 py-3 rounded-xl bg-slate-950 border border-slate-700 hover:border-blue-500 text-white font-semibold text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 appearance-none pr-10 cursor-pointer transition-colors shadow-inner"
-            >
-              <option value="" disabled>
-                -- Select a repair service from dropdown (Screen, Battery, Port...) --
-              </option>
-              {POPULAR_REPAIRS.map((repair) => (
-                <option key={repair.id} value={repair.id}>
-                  {repair.title} ({repair.subtitle}) — {repair.timeEstimate}
-                </option>
-              ))}
-            </select>
-            <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3.5 text-blue-400">
-              <ChevronDown className="w-4 h-4" />
-            </div>
-          </div>
         </div>
 
         {/* Popular Repairs Cards Grid (Touch & Click Cards) */}

@@ -55,9 +55,65 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [hasUnread, setHasUnread] = useState(true);
   const [isMinimized, setIsMinimized] = useState(false);
+  const [viewportHeight, setViewportHeight] = useState<number | null>(null);
+  const [viewportTop, setViewportTop] = useState<number>(0);
+  const [isMobile, setIsMobile] = useState<boolean>(() =>
+    typeof window !== 'undefined' ? window.innerWidth < 640 : false
+  );
 
   const messagesEndRef = useRef<HTMLDivElement | null>(null);
   const inputRef = useRef<HTMLInputElement | null>(null);
+
+  // Monitor mobile screen size and visual viewport for virtual keyboard
+  useEffect(() => {
+    const handleResize = () => {
+      const mobile = window.innerWidth < 640;
+      setIsMobile(mobile);
+    };
+
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Handle visual viewport changes on mobile (e.g. iOS virtual keyboard popup)
+  useEffect(() => {
+    if (!isOpen) {
+      document.body.style.overflow = '';
+      return;
+    }
+
+    if (isMobile) {
+      document.body.style.overflow = 'hidden';
+    }
+
+    const updateVisualViewport = () => {
+      if (window.visualViewport && window.innerWidth < 640) {
+        setViewportHeight(window.visualViewport.height);
+        setViewportTop(window.visualViewport.offsetTop || 0);
+      } else {
+        setViewportHeight(null);
+        setViewportTop(0);
+      }
+    };
+
+    updateVisualViewport();
+
+    if (window.visualViewport) {
+      window.visualViewport.addEventListener('resize', updateVisualViewport);
+      window.visualViewport.addEventListener('scroll', updateVisualViewport);
+    }
+    window.addEventListener('resize', updateVisualViewport);
+
+    return () => {
+      document.body.style.overflow = '';
+      if (window.visualViewport) {
+        window.visualViewport.removeEventListener('resize', updateVisualViewport);
+        window.visualViewport.removeEventListener('scroll', updateVisualViewport);
+      }
+      window.removeEventListener('resize', updateVisualViewport);
+    };
+  }, [isOpen, isMobile]);
 
   // Listen for global open-dialfix-chatbot event
   useEffect(() => {
@@ -80,17 +136,19 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
     if (isOpen && !isMinimized) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
-  }, [messages, isOpen, isMinimized, isLoading]);
+  }, [messages, isOpen, isMinimized, isLoading, viewportHeight]);
 
-  // Focus input when opened
+  // Only auto-focus input on desktop, prevent jarring keyboard popup on mobile
   useEffect(() => {
-    if (isOpen && !isMinimized) {
+    if (isOpen && !isMinimized && !isMobile) {
       setTimeout(() => {
         inputRef.current?.focus();
-      }, 100);
+      }, 150);
+    }
+    if (isOpen) {
       setHasUnread(false);
     }
-  }, [isOpen, isMinimized]);
+  }, [isOpen, isMinimized, isMobile]);
 
   const handleSend = async (textToSend?: string) => {
     const text = (textToSend || input).trim();
@@ -254,27 +312,37 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
       {isOpen && (
         <div
           id="dialfix-chatbot-window"
-          className={`fixed z-50 transition-all duration-200 ease-out ${
+          style={
+            isMobile && !isMinimized
+              ? {
+                  height: viewportHeight ? `${viewportHeight}px` : '100dvh',
+                  maxHeight: viewportHeight ? `${viewportHeight}px` : '100dvh',
+                  top: `${viewportTop}px`,
+                  bottom: 'auto',
+                }
+              : undefined
+          }
+          className={`fixed z-50 transition-all duration-150 ease-out ${
             isMinimized
               ? 'bottom-4 right-4 sm:bottom-6 sm:right-6 w-72 rounded-2xl shadow-xl'
-              : 'bottom-0 right-0 sm:bottom-6 sm:right-6 w-full h-[85vh] sm:h-[600px] sm:max-h-[85vh] sm:w-[410px] rounded-t-3xl sm:rounded-3xl shadow-2xl'
-          } bg-slate-950/98 backdrop-blur-xl border border-slate-800/90 flex flex-col overflow-hidden text-slate-100`}
+              : 'inset-x-0 bottom-0 sm:inset-auto sm:bottom-6 sm:right-6 w-full h-[100dvh] sm:h-[620px] sm:max-h-[85vh] sm:w-[420px] rounded-none sm:rounded-3xl shadow-2xl'
+          } bg-slate-950 backdrop-blur-2xl border-0 sm:border sm:border-slate-800/90 flex flex-col overflow-hidden text-slate-100`}
         >
           {/* Header */}
-          <div className="px-4 py-3.5 bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/70 border-b border-slate-800 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-3">
-              <div className="relative w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md">
+          <div className="px-4 py-3 bg-gradient-to-r from-slate-900 via-slate-900 to-blue-950/80 border-b border-slate-800 flex items-center justify-between shrink-0 pt-[max(0.75rem,env(safe-area-inset-top))]">
+            <div className="flex items-center gap-2.5 sm:gap-3">
+              <div className="relative w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-blue-500 flex items-center justify-center text-white shadow-md">
                 <Wrench className="w-4 h-4" />
-                <span className="absolute -top-1 -right-1 w-3 h-3 rounded-full bg-emerald-500 border-2 border-slate-900" />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 border-2 border-slate-900" />
               </div>
               <div>
                 <div className="flex items-center gap-1.5">
-                  <h3 className="text-sm font-bold text-white tracking-tight">DialFix Chat Bot</h3>
+                  <h3 className="text-xs sm:text-sm font-bold text-white tracking-tight">DialFix Chat Bot</h3>
                   <span className="px-1.5 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 font-bold border border-emerald-500/30">
                     Online
                   </span>
                 </div>
-                <p className="text-[11px] text-slate-400">Official Eccles Repair Assistant · 5.0★</p>
+                <p className="text-[10px] sm:text-[11px] text-slate-400">Official Eccles Repair Assistant · 5.0★</p>
               </div>
             </div>
 
@@ -283,7 +351,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
               <button
                 onClick={handleResetChat}
                 title="Restart chat"
-                className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
                 aria-label="Restart chat"
               >
                 <RotateCcw className="w-4 h-4" />
@@ -292,7 +360,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
               <button
                 onClick={() => setIsMinimized(!isMinimized)}
                 title={isMinimized ? 'Expand' : 'Minimize'}
-                className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors hidden sm:block"
+                className="p-2 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors hidden sm:block"
                 aria-label={isMinimized ? 'Expand' : 'Minimize'}
               >
                 <ChevronDown className={`w-4 h-4 transition-transform ${isMinimized ? 'rotate-180' : ''}`} />
@@ -301,7 +369,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
               <button
                 onClick={() => setIsOpen(false)}
                 title="Close chat"
-                className="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+                className="p-2 text-slate-300 hover:text-white bg-slate-800/80 sm:bg-transparent sm:hover:bg-slate-800 rounded-lg transition-colors flex items-center justify-center"
                 aria-label="Close chat"
               >
                 <X className="w-4 h-4" />
@@ -312,7 +380,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
           {!isMinimized && (
             <>
               {/* Trust Sub-Header Banner */}
-              <div className="px-3.5 py-1.5 bg-blue-950/40 border-b border-blue-900/30 flex items-center justify-between text-[11px] text-blue-300 font-medium">
+              <div className="px-3.5 py-1.5 bg-blue-950/40 border-b border-blue-900/30 flex items-center justify-between text-[11px] text-blue-300 font-medium shrink-0">
                 <span className="flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                   <span>12m Warranty & No Fix, No Fee</span>
@@ -321,13 +389,13 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
               </div>
 
               {/* Message List */}
-              <div className="flex-1 p-4 overflow-y-auto space-y-3.5 text-sm custom-scrollbar bg-slate-950/60">
+              <div className="flex-1 min-h-0 p-3.5 sm:p-4 overflow-y-auto space-y-3.5 text-sm custom-scrollbar bg-slate-950/60">
                 {messages.map((msg) => {
                   const isUser = msg.role === 'user';
                   return (
                     <div
                       key={msg.id}
-                      className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[90%] ${
+                      className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} max-w-[90%] sm:max-w-[85%] ${
                         isUser ? 'ml-auto' : 'mr-auto'
                       }`}
                     >
@@ -338,7 +406,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
                       </div>
 
                       <div
-                        className={`p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
+                        className={`p-3 sm:p-3.5 rounded-2xl text-xs sm:text-sm leading-relaxed ${
                           isUser
                             ? 'bg-blue-600 text-white rounded-br-xs shadow-md shadow-blue-900/30 font-medium'
                             : 'bg-slate-900 text-slate-200 border border-slate-800 rounded-bl-xs shadow-sm font-normal'
@@ -348,10 +416,10 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
 
                         {/* Interactive Direct CTAs inside Assistant responses */}
                         {!isUser && msg.showActions && (
-                          <div className="mt-3 pt-2.5 border-t border-slate-800/80 flex flex-wrap items-center gap-1.5">
+                          <div className="mt-2.5 pt-2 border-t border-slate-800/80 flex flex-wrap items-center gap-1.5">
                             <button
                               onClick={handleOpenBookingAndClose}
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-200 hover:text-white border border-blue-500/40 text-[11px] font-bold transition-colors cursor-pointer"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-blue-600/30 hover:bg-blue-600 text-blue-200 hover:text-white border border-blue-500/40 text-[11px] font-bold transition-colors cursor-pointer"
                             >
                               <Calendar className="w-3 h-3" />
                               <span>Book Online</span>
@@ -361,7 +429,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
                               href={BUSINESS_INFO.whatsappUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 text-[11px] font-bold transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-emerald-600/20 hover:bg-emerald-600 text-emerald-300 hover:text-white border border-emerald-500/40 text-[11px] font-bold transition-colors"
                             >
                               <MessageSquare className="w-3 h-3" />
                               <span>WhatsApp</span>
@@ -369,7 +437,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
 
                             <a
                               href={BUSINESS_INFO.phoneTel}
-                              className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-medium transition-colors"
+                              className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-700 text-[11px] font-medium transition-colors"
                             >
                               <Phone className="w-3 h-3" />
                               <span>Call Shop</span>
@@ -385,7 +453,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
                 {isLoading && (
                   <div className="flex flex-col items-start max-w-[85%] mr-auto">
                     <span className="text-[11px] text-slate-400 mb-1 px-1 font-medium">DialFix Chat Bot</span>
-                    <div className="p-3.5 rounded-2xl bg-slate-900 border border-slate-800 rounded-bl-xs text-xs text-slate-400 flex items-center gap-2">
+                    <div className="p-3 rounded-2xl bg-slate-900 border border-slate-800 rounded-bl-xs text-xs text-slate-400 flex items-center gap-2">
                       <div className="flex items-center gap-1">
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce" />
                         <span className="w-1.5 h-1.5 rounded-full bg-blue-400 animate-bounce [animation-delay:0.2s]" />
@@ -400,7 +468,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
               </div>
 
               {/* Quick Prompts Carousel */}
-              <div className="px-3 py-2 bg-slate-900/90 border-t border-slate-800/80 overflow-x-auto no-scrollbar flex items-center gap-1.5">
+              <div className="px-3 py-2 bg-slate-900/90 border-t border-slate-800/80 overflow-x-auto no-scrollbar flex items-center gap-1.5 shrink-0">
                 <span className="text-[10px] uppercase font-bold text-slate-500 tracking-wider shrink-0 pl-1">
                   Suggestions:
                 </span>
@@ -422,7 +490,7 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
                   e.preventDefault();
                   handleSend();
                 }}
-                className="p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-2 shrink-0"
+                className="p-2.5 sm:p-3 bg-slate-950 border-t border-slate-800 flex items-center gap-2 shrink-0 pb-[max(0.6rem,env(safe-area-inset-bottom))]"
               >
                 <input
                   ref={inputRef}
@@ -431,21 +499,21 @@ export function DialFixChatBot({ onOpenBooking }: DialFixChatBotProps) {
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask DialFix Chat Bot anything..."
                   disabled={isLoading}
-                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-xs sm:text-sm focus:outline-none focus:border-blue-500 transition-colors"
+                  className="flex-1 px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-white placeholder-slate-500 text-base sm:text-sm focus:outline-none focus:border-blue-500 transition-colors"
                 />
 
                 <button
                   type="submit"
                   disabled={!input.trim() || isLoading}
-                  className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 text-white transition-all transform active:scale-95 shrink-0"
+                  className="p-2.5 rounded-xl bg-blue-600 hover:bg-blue-500 disabled:bg-slate-800 disabled:text-slate-600 text-white transition-all transform active:scale-95 shrink-0 min-w-[42px] min-h-[42px] flex items-center justify-center"
                   aria-label="Send message"
                 >
                   <Send className="w-4 h-4" />
                 </button>
               </form>
 
-              {/* Footer Notice */}
-              <div className="px-3 py-1.5 bg-slate-950 border-t border-slate-900 text-center">
+              {/* Footer Notice (Shown on desktop only to maximize screen space on mobile) */}
+              <div className="hidden sm:block px-3 py-1.5 bg-slate-950 border-t border-slate-900 text-center shrink-0">
                 <span className="text-[10px] text-slate-500 font-medium">
                   530 Liverpool Rd, Eccles • Mon-Sat 9am-7pm • +44 7365 206098
                 </span>
